@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StromzaehlerWechsel>
+  <Zaehlernummer>1234567890</Zaehlernummer>
+  <ZaehlernummerAlt>0987654321</ZaehlernummerAlt>
+  <WechselDatum>2025-07-15</WechselDatum>
+  <MSB>Netz GmbH Musterstadt</MSB>
+  <Einbauort>Hauptstraße 12, 12345 Musterstadt</Einbauort>
+  <GatewayID>GW123456</GatewayID>
+  <Geraetetyp>eHZ</Geraetetyp>
+  <Fabrikat>Elster</Fabrikat>
+  <ZaehlerstandAlt>12345.67</ZaehlerstandAlt>
+  <ZaehlerstandNeu>0.00</ZaehlerstandNeu>
+  <Montageperson>Max Mustermann</Montageperson>
+  <Dokumentationsnummer>DOC20250715A</Dokumentationsnummer>
+  <Tarifregister>HT</Tarifregister>
+  <KommunikationAktiv>true</KommunikationAktiv>
+  <LetzteAuslesung>2025-07-15T13:45:00</LetzteAuslesung>
+</StromzaehlerWechsel>

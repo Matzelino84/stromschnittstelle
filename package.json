@@ -8,7 +8,8 @@
     "import": "node import.js"
   },
   "dependencies": {
-    "fast-xml-parser": "^4.3.5",
+    "fast-xml-parser": "^4.5.3",
+    "node-fetch": "^3.3.2",
     "xmlbuilder2": "^3.1.1"
   }
 }
