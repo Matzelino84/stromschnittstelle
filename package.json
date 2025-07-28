@@ -9,6 +9,6 @@
   },
   "dependencies": {
     "fast-xml-parser": "^4.3.5",
-    "xmlbuilder2": "^3.0.2"
+    "xmlbuilder2": "^3.1.1"
   }
 }

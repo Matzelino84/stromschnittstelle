@@ -1,6 +1,7 @@
 const { create } = require('xmlbuilder2');
 const fs = require('fs');
 
+// Dummy-Daten für einen Stromauftrag
 const auftrag = {
   AUF_ID: '123456789',
   GER_SERIALNR: 'ST123456',
@@ -28,7 +29,8 @@ const auftrag = {
   ]
 };
 
-const xml = create({ version: '1.0', encoding: 'UTF-8' })
+// XML erzeugen
+const root = create({ version: '1.0', encoding: 'UTF-8' })
   .ele('BLOCK')
     .ele('OBJ')
       .ele('AUF_ID').txt(auftrag.AUF_ID).up()
@@ -36,20 +38,22 @@ const xml = create({ version: '1.0', encoding: 'UTF-8' })
       .ele('ARBEITSPROZESS').txt(auftrag.ARBEITSPROZESS).up()
       .ele('AV_ID').txt(auftrag.AV_ID).up()
       .ele('BNID').txt(auftrag.BNID).up()
-      .ele('ISTBEARB').txt(auftrag.ISTBEARB).up()
-      .import(auftrag.ACTS.map(act => ({
-        ACT: {
-          ACT_ID: act.ACT_ID,
-          BEZEICHNER: act.BEZEICHNER,
-          OBJEKT: act.OBJEKT,
-          ERG: act.ERG,
-          ERGDAT: act.ERGDAT,
-          ERFDAT: act.ERFDAT
-        }
-      })))
-    .up()
-  .up()
-.end({ prettyPrint: true });
+      .ele('ISTBEARB').txt(auftrag.ISTBEARB).up();
 
+// Tätigkeiten anhängen (jede ACT einzeln)
+auftrag.ACTS.forEach(act => {
+  root
+    .ele('ACT')
+      .ele('ACT_ID').txt(act.ACT_ID).up()
+      .ele('BEZEICHNER').txt(act.BEZEICHNER).up()
+      .ele('OBJEKT').txt(act.OBJEKT).up()
+      .ele('ERG').txt(act.ERG).up()
+      .ele('ERGDAT').txt(act.ERGDAT).up()
+      .ele('ERFDAT').txt(act.ERFDAT).up()
+    .up();
+});
+
+// XML finalisieren & speichern
+const xml = root.end({ prettyPrint: true });
 fs.writeFileSync('strom-export.xml', xml);
 console.log('✅ Export-Datei geschrieben: strom-export.xml');
