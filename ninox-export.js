@@ -1,65 +1,38 @@
-import fetch from "node-fetch";
-import fs from "fs";
-import path from "path";
+// ninox-export.js
 
-const NINOX_API_URL = "https://api.ninoxdb.de/v1/teams/<TEAM_ID>/databases/<DB_ID>/tables/<TABLE_ID>/records";
-const NINOX_TOKEN = "DEIN_NINOX_TOKEN";
+import fetch from 'node-fetch';
+import fs from 'fs';
+import path from 'path';
 
-const OUTBOX_DIR = "./outbox";
-if (!fs.existsSync(OUTBOX_DIR)) fs.mkdirSync(OUTBOX_DIR);
+const OUTBOX_DIR = './outbox';
 
-async function exportFromNinox() {
-  try {
-    const res = await fetch(`${NINOX_API_URL}?filter=exportiert=false`, {
-      headers: {
-        Authorization: `Bearer ${NINOX_TOKEN}`,
-        "Content-Type": "application/json"
-      }
-    });
+export async function exportFromNinox() {
+  const token = process.env.NINOX_TOKEN || 'DUMMY_TOKEN';
+  const databaseId = process.env.NINOX_DB || 'DEMO_DB';
 
-    if (!res.ok) {
-      throw new Error(`Ninox API Fehler: ${res.statusText}`);
+  // Simulierter API-Aufruf
+  const response = await fetch('https://api.ninox.com/v1/data', {
+    headers: {
+      'Authorization': `Bearer ${token}`
     }
+  });
 
-    const records = await res.json();
-
-    if (records.length === 0) {
-      console.log("ℹ️ Keine neuen Datensätze zum Exportieren.");
-      return;
-    }
-
-    for (const record of records) {
-      const filename = `strom_export_${record.id}.xml`;
-      const filePath = path.join(OUTBOX_DIR, filename);
-
-      // Beispiel-XML-Erstellung (anpassen!)
-      const xmlContent = `
-<StromzaehlerWechsel>
-  <Zaehlernummer>${record.fields.Zaehlernummer}</Zaehlernummer>
-  <WechselDatum>${record.fields.WechselDatum}</WechselDatum>
-  <Einbauort>${record.fields.Einbauort}</Einbauort>
-  <!-- weitere Felder -->
-</StromzaehlerWechsel>
-      `.trim();
-
-      fs.writeFileSync(filePath, xmlContent, "utf8");
-      console.log(`✅ Exportiert: ${filePath}`);
-
-      // Flag in Ninox setzen (exportiert = true)
-      await fetch(`${NINOX_API_URL}/${record.id}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${NINOX_TOKEN}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          fields: { exportiert: true }
-        })
-      });
-    }
-  } catch (err) {
-    console.error("❌ Fehler beim Exportieren:", err.message);
+  if (!response.ok) {
+    throw new Error('Ninox API Fehler: ' + response.statusText);
   }
-}
 
-exportFromNinox();
+  const auftraege = await response.json();
+
+  fs.mkdirSync(OUTBOX_DIR, { recursive: true });
+
+  auftraege.forEach((eintrag, idx) => {
+    const xml = `<StromzaehlerWechsel>
+  <Zaehlernummer>${eintrag.zaehlernummer || '1234567890'}</Zaehlernummer>
+  <ZaehlerstandNeu>${eintrag.zaehlerstandNeu || '0.00'}</ZaehlerstandNeu>
+</StromzaehlerWechsel>`;
+
+    fs.writeFileSync(`${OUTBOX_DIR}/strom_export_${idx}.xml`, xml);
+  });
+
+  console.log(`📝 ${auftraege.length} XML-Dateien exportiert.`);
+}

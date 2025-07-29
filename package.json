@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
+    "archiver": "^7.0.1",
     "fast-xml-parser": "^4.5.3",
     "node-fetch": "^3.3.2",
     "xmlbuilder2": "^3.1.1",
@@ -16,5 +17,16 @@
   },
   "devDependencies": {
     "pm2": "^6.0.8"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Matzelino84/stromschnittstelle.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Matzelino84/stromschnittstelle/issues"
+  },
+  "homepage": "https://github.com/Matzelino84/stromschnittstelle#readme"
 }

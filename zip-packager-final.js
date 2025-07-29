@@ -1,48 +1,56 @@
-import fs from "fs";
-import path from "path";
-import AdmZip from "adm-zip";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import archiver from 'archiver';
 
-// 📁 Konfiguration
-const XML_FILE = "./outbox/strom_export_17.xml";
-const BILD_DIR = "./bilder";
-const ZIP_DIR = "./pakete";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// 🕒 Zeitstempel für den Dateinamen
-const now = new Date();
-const timestamp = now.toISOString().replace(/[:.]/g, "-");
-const zipName = `strom_export_${timestamp}.zip`;
-const zipPath = path.join(ZIP_DIR, zipName);
+// Verzeichnisse
+const outboxDir = path.join(__dirname, 'outbox');
+const bilderDir = path.join(__dirname, 'bilder');
+const paketeDir = path.join(__dirname, 'pakete');
 
-try {
-  if (!fs.existsSync(XML_FILE)) {
-    console.error("❌ XML-Datei nicht gefunden:", XML_FILE);
-    process.exit(1);
-  }
+// ZIP erstellen
+async function createZip() {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const zipName = `strom_export_${timestamp}.zip`;
+  const zipPath = path.join(paketeDir, zipName);
 
-  if (!fs.existsSync(BILD_DIR)) {
-    console.error("❌ Bilder-Verzeichnis fehlt:", BILD_DIR);
-    process.exit(1);
-  }
+  // Sicherstellen, dass das Zielverzeichnis existiert
+  if (!fs.existsSync(paketeDir)) fs.mkdirSync(paketeDir);
 
-  if (!fs.existsSync(ZIP_DIR)) {
-    fs.mkdirSync(ZIP_DIR);
-  }
+  const output = fs.createWriteStream(zipPath);
+  const archive = archiver('zip', { zlib: { level: 9 } });
 
-  const zip = new AdmZip();
+  return new Promise((resolve, reject) => {
+    output.on('close', () => {
+      console.log(`✅ ZIP erstellt: ${path.relative(__dirname, zipPath)}`);
+      resolve(zipPath);
+    });
 
-  // XML-Datei
-  zip.addLocalFile(XML_FILE);
+    archive.on('error', err => reject(err));
 
-  // Bilder
-  const bilder = fs.readdirSync(BILD_DIR).filter(f => f.endsWith(".jpg"));
-  bilder.forEach(file => {
-    zip.addLocalFile(path.join(BILD_DIR, file));
+    archive.pipe(output);
+
+    // XML-Dateien aus /outbox hinzufügen
+    fs.readdirSync(outboxDir).forEach(file => {
+      if (file.endsWith('.xml')) {
+        const filePath = path.join(outboxDir, file);
+        archive.file(filePath, { name: file });
+      }
+    });
+
+    // Bilder aus /bilder hinzufügen (optional)
+    if (fs.existsSync(bilderDir)) {
+      fs.readdirSync(bilderDir).forEach(file => {
+        const filePath = path.join(bilderDir, file);
+        archive.file(filePath, { name: `bilder/${file}` });
+      });
+    }
+
+    archive.finalize();
   });
-
-  // Schreiben
-  zip.writeZip(zipPath);
-  console.log("✅ ZIP erstellt:", zipPath);
-
-} catch (err) {
-  console.error("❌ Fehler beim Packen:", err);
 }
+
+export { createZip };
